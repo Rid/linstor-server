@@ -164,7 +164,28 @@ public class ZfsProvider extends AbsStorageProvider<ZfsInfo, ZfsData<Resource>, 
     )
         throws StorageException
     {
-        return ZfsUtils.getZfsList(extCmdFactory.create());
+        final List<ZfsData<?>> combinedList = new ArrayList<>();
+        combinedList.addAll(vlmDataListRef);
+        combinedList.addAll(snapVlmsRef);
+
+        final ArrayList<String> fullQualifiedIds = new ArrayList<>();
+
+        for (ZfsData<?> vlmData : combinedList)
+        {
+            try
+            {
+                fullQualifiedIds.add(asFullQualifiedLvIdentifier(vlmData));
+            }
+            catch (AccessDeniedException exc)
+            {
+                throw new ImplementationError(exc);
+            }
+        }
+
+        return ZfsUtils.getZfsList(
+            extCmdFactory.create(),
+            fullQualifiedIds
+        );
     }
 
     @Override
